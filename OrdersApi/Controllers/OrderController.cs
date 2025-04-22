@@ -6,7 +6,7 @@ namespace OrdersApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class OrdersController : ControllerBase
+    public class OrderController : ControllerBase
     {
 		// Hardcoded list of orders for demonstration purposes
 		private static readonly List<OrdersModel> _orders = new()
