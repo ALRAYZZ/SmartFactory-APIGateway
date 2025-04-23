@@ -1,4 +1,5 @@
 ﻿using MachinesApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,7 +7,8 @@ namespace MachinesApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class MachineController : ControllerBase
+    [Authorize]
+	public class MachineController : ControllerBase
     {
         private static readonly List<MachineModel> _machines = new()
         {

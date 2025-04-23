@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OrdersApi.Models;
 
@@ -6,7 +7,8 @@ namespace OrdersApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class OrderController : ControllerBase
+	[Authorize]
+	public class OrderController : ControllerBase
     {
 		// Hardcoded list of orders for demonstration purposes
 		private static readonly List<OrdersModel> _orders = new()

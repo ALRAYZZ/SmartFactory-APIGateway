@@ -1,4 +1,5 @@
 ﻿using InventoryApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,7 +7,8 @@ namespace InventoryApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class InventoryController : ControllerBase
+    [Authorize]
+	public class InventoryController : ControllerBase
     {
         private static readonly List<ItemModel> _inventory = new()
         {
