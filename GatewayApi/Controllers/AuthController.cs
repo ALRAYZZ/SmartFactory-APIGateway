@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using GatewayApi.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -21,7 +22,7 @@ namespace GatewayApi.Controllers
 		}
 
         [HttpPost]
-        public IActionResult Login([FromBody] LoginModel model)
+        public ActionResult<TokenResponse> Login([FromBody] LoginModel model)
         {
 			// In-memory authentication for demonstration purposes'
             if (model.Username == "admin" && model.Password == "password")
@@ -35,15 +36,21 @@ namespace GatewayApi.Controllers
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
                 var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-                var token = new JwtSecurityToken(
+                var jwtToken = new JwtSecurityToken(
                     issuer: _configuration["Jwt:Issuer"],
 					audience: _configuration["Jwt:Audience"],
                     claims: claims,
                     expires: DateTime.Now.AddMinutes(int.Parse(_configuration["Jwt:ExpireMinutes"])),
 					signingCredentials: credentials);
 
-                return Ok(new {Token = new JwtSecurityTokenHandler().WriteToken(token) });
-			}
+                var token = new JwtSecurityTokenHandler().WriteToken(jwtToken);
+
+                return Ok(new TokenResponse()
+                {
+                    Token = token,
+                    Expiration = jwtToken.ValidTo
+                });
+            }
 
             return Unauthorized();
 		}
