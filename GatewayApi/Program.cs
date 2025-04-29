@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,13 +33,35 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddReverseProxy()
 	.LoadFromConfig(builder.Configuration.GetSection("ReverseProxy")); // We add the appsettings file to the configuration that we called "ReverseProxy" in the .json
 
+// Adding Rate Limiting
+builder.Services.AddRateLimiter(options =>
+{
+	options.AddFixedWindowLimiter("GlobalLimit", policyOptions =>
+	{
+		policyOptions.PermitLimit = 100; // N. of requests allowed in the time window
+		policyOptions.Window = TimeSpan.FromMinutes(1); // Time window
+		policyOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst; // Order in which requests are processed
+		policyOptions.QueueLimit = 10; // N. of requests that can be queued
+	});
+
+	// Response when hitting rate limit
+	options.OnRejected = async (context, cancellationToken) =>
+	{
+		context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests; // Too many requests
+		await context.HttpContext.Response.WriteAsync("Rate limit exceeded. Please try again later.", cancellationToken); // Response message
+	};
+});
+
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseRateLimiter(); // Enable rate limiting
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapControllers().RequireRateLimiting("GlobalLimit");
 
 
 // Map YARP routes
@@ -61,7 +85,7 @@ app.MapReverseProxy(proxyPipeline =>
 
 		await next(); // Continue processing the request
 	});
-});
+}).RequireRateLimiting("GlobalLimit");
 
 
 app.Run();

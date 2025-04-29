@@ -24,7 +24,7 @@ namespace GatewayApi.Controllers
         [HttpPost]
         public ActionResult<TokenResponse> Login([FromBody] LoginModel model)
         {
-			// In-memory authentication for demonstration purposes'
+			// In-memory authentication for demonstration purposes
             if (model.Username == "admin" && model.Password == "password")
             {
                 var claims = new[]
